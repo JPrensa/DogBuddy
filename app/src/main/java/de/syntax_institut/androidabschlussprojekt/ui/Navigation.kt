@@ -43,6 +43,7 @@ import androidx.navigation.NavType
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.verticalScroll
 import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+import de.syntax_institut.androidabschlussprojekt.ui.RandomDogScreen
 import androidx.compose.foundation.rememberScrollState
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -64,6 +65,7 @@ sealed class Screen(val route: String, val title: String) {
     object Home : Screen("home", "Home")
     object Upload : Screen("upload", "Upload")
     object Calendar : Screen("Calendar", "Calendar")
+    object RandomDog : Screen("random_dog", "Zufälliger Hund")
     object Profile : Screen("profile", "Profile")
     object DogProfile : Screen("dog_profile/{dogId}", "Dog Profile") {
         fun createRoute(dogId: String) = "dog_profile/$dogId"
@@ -76,7 +78,7 @@ fun AppNavHost() {
     val navController = rememberNavController()
     Scaffold(
         bottomBar = {
-            val items = listOf(Screen.Home, Screen.Upload, Screen.Calendar, Screen.Profile)
+            val items = listOf(Screen.Home, Screen.Upload, Screen.Calendar, Screen.RandomDog, Screen.Profile)
             val navBackStackEntry = navController.currentBackStackEntryAsState().value
             val currentRoute = navBackStackEntry?.destination?.route
             NavigationBar {
@@ -90,6 +92,7 @@ fun AppNavHost() {
                                         Screen.Upload -> R.drawable.baseline_create_24
                                         Screen.Calendar -> R.drawable.baseline_calendar_month_24
                                         Screen.Profile -> R.drawable.baseline_person_24
+                                        Screen.RandomDog -> R.drawable.baseline_pets_24
                                         else -> R.drawable.baseline_home_24
                                     }
                                 ),
@@ -116,6 +119,7 @@ fun AppNavHost() {
             composable(Screen.Home.route) { HomeScreen(navController) }
             composable(Screen.Upload.route) { UploadScreen(navController) }
             composable(Screen.Calendar.route) { CalendarScreen() }
+                composable(Screen.RandomDog.route) { RandomDogScreen() }
             composable(Screen.Profile.route) { ProfileScreen(navController) }
             composable(
                 Screen.DogProfile.route,
@@ -323,7 +327,7 @@ fun ProfileScreen(navController: NavController) {
         }
         Spacer(modifier = Modifier.height(16.dp))
         Image(
-            painter = painterResource(id = R.drawable.baseline_person_24),
+            painter = painterResource(id = R.drawable.profilbild1),
             contentDescription = "Profilbild",
             modifier = Modifier
                 //.size(120.dp)
