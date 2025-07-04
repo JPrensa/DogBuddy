@@ -46,43 +46,73 @@ fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
                 it.name.contains(searchQuery, ignoreCase = true)
             }.take(3)
             if (selectedBreed == null) {
-                if (suggestions.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                if (searchQuery.isBlank()) {
+                    val dailyBreed = remember(breeds) { breeds.random() }
+                    Card(
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
-                        Text("Keine Rassen gefunden", style = MaterialTheme.typography.bodyMedium)
-                    }
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(suggestions) { breed ->
-                            Card(
-                                shape = RoundedCornerShape(8.dp),
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            AsyncImage(
+                                model = dailyBreed.image?.url ?: dailyBreed.referenceImageId?.let { "https://cdn2.thedogapi.com/images/$it.jpg" },
+                                contentDescription = dailyBreed.name,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { selectedBreed = breed },
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                            ) {
-                                Column(
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(text = dailyBreed.name, style = MaterialTheme.typography.headlineSmall)
+                            dailyBreed.lifeSpan?.let { Text(text = "Leben: $it", style = MaterialTheme.typography.bodyMedium) }
+                            dailyBreed.temperament?.let { Text(text = "Temperament: $it", style = MaterialTheme.typography.bodyMedium) }
+                            dailyBreed.origin?.let { Text(text = "Ursprung: $it", style = MaterialTheme.typography.bodyMedium) }
+                            dailyBreed.weight?.metric?.let { Text(text = "Gewicht: $it kg", style = MaterialTheme.typography.bodyMedium) }
+                        }
+                    }
+                } else {
+                    if (suggestions.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Keine Rassen gefunden", style = MaterialTheme.typography.bodyMedium)
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(suggestions) { breed ->
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                        .clickable { selectedBreed = breed },
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                                 ) {
-                                    AsyncImage(
-                                        model = breed.image?.url ?: breed.referenceImageId?.let { "https://cdn2.thedogapi.com/images/$it.jpg" },
-                                        contentDescription = breed.name,
-                                        contentScale = ContentScale.Crop,
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(200.dp)
-                                            .clip(RoundedCornerShape(16.dp))
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(text = breed.name, style = MaterialTheme.typography.headlineSmall)
+                                            .padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        AsyncImage(
+                                            model = breed.image?.url ?: breed.referenceImageId?.let { "https://cdn2.thedogapi.com/images/$it.jpg" },
+                                            contentDescription = breed.name,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(200.dp)
+                                                .clip(RoundedCornerShape(16.dp))
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(text = breed.name, style = MaterialTheme.typography.headlineSmall)
+                                    }
                                 }
                             }
                         }
