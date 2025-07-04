@@ -44,6 +44,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.verticalScroll
 import de.syntax_institut.androidabschlussprojekt.data.UserRepository
 import de.syntax_institut.androidabschlussprojekt.ui.RandomDogScreen
+import de.syntax_institut.androidabschlussprojekt.ui.BreedListScreen
+import de.syntax_institut.androidabschlussprojekt.ui.UploadScreen as MVVMUploadScreen
+import de.syntax_institut.androidabschlussprojekt.ui.ProfileScreen as MVVMProfileScreen
+import de.syntax_institut.androidabschlussprojekt.ui.EditProfileScreen as MVVMEditProfileScreen
 import androidx.compose.foundation.rememberScrollState
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -66,6 +70,7 @@ sealed class Screen(val route: String, val title: String) {
     object Upload : Screen("upload", "Upload")
     object Calendar : Screen("Calendar", "Calendar")
     object RandomDog : Screen("random_dog", "Zufälliger Hund")
+    object Breeds : Screen("breeds", "Hunderassen")
     object Profile : Screen("profile", "Profile")
     object DogProfile : Screen("dog_profile/{dogId}", "Dog Profile") {
         fun createRoute(dogId: String) = "dog_profile/$dogId"
@@ -78,7 +83,7 @@ fun AppNavHost() {
     val navController = rememberNavController()
     Scaffold(
         bottomBar = {
-            val items = listOf(Screen.Home, Screen.Upload, Screen.Calendar, Screen.RandomDog, Screen.Profile)
+            val items = listOf(Screen.Home, Screen.Upload, Screen.Calendar, Screen.RandomDog, Screen.Breeds, Screen.Profile)
             val navBackStackEntry = navController.currentBackStackEntryAsState().value
             val currentRoute = navBackStackEntry?.destination?.route
             NavigationBar {
@@ -93,6 +98,7 @@ fun AppNavHost() {
                                         Screen.Calendar -> R.drawable.baseline_calendar_month_24
                                         Screen.Profile -> R.drawable.baseline_person_24
                                         Screen.RandomDog -> R.drawable.baseline_pets_24
+                                        Screen.Breeds -> R.drawable.baseline_filter_list_24
                                         else -> R.drawable.baseline_home_24
                                     }
                                 ),
@@ -117,10 +123,12 @@ fun AppNavHost() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) { HomeScreen(navController) }
-            composable(Screen.Upload.route) { UploadScreen(navController) }
+            composable(Screen.Upload.route) { MVVMUploadScreen(navController) }
             composable(Screen.Calendar.route) { CalendarScreen() }
                 composable(Screen.RandomDog.route) { RandomDogScreen() }
-            composable(Screen.Profile.route) { ProfileScreen(navController) }
+            composable(Screen.Breeds.route) { BreedListScreen() }
+            composable(Screen.Profile.route) { MVVMProfileScreen(navController) }
+            composable(Screen.EditProfile.route) { MVVMEditProfileScreen(navController) }
             composable(
                 Screen.DogProfile.route,
                 arguments = listOf(navArgument("dogId") { type = NavType.StringType })
@@ -128,9 +136,7 @@ fun AppNavHost() {
                 val dogId = backStackEntry.arguments?.getString("dogId")
                 DogProfileScreen(dogId)
             }
-            composable(Screen.EditProfile.route) {
-                EditProfileScreen(navController)
-            }
+
         }
     }
 }

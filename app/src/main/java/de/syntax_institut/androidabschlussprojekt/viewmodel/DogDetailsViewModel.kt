@@ -6,24 +6,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
-import de.syntax_institut.androidabschlussprojekt.data.api.DogApi
+import de.syntax_institut.androidabschlussprojekt.data.api.DogDetailsApi
+import de.syntax_institut.androidabschlussprojekt.data.api.Breed
 
-class DogViewModel : ViewModel() {
-    var imageUrl by mutableStateOf<String?>(null)
+class DogDetailsViewModel : ViewModel() {
+    var breeds by mutableStateOf<List<Breed>>(emptyList())
         private set
 
     init {
-        loadRandom()
+        loadBreeds()
     }
 
-    fun loadRandom() {
+    fun loadBreeds() {
         viewModelScope.launch {
             runCatching {
-                DogApi.service.getRandomDogImage()
+                DogDetailsApi.service.getBreeds()
             }.onSuccess {
-                imageUrl = it.message
+                breeds = it
             }.onFailure {
-
+                // Fehler beim Laden der Rassen
             }
         }
     }

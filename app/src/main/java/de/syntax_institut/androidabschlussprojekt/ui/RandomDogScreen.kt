@@ -10,6 +10,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import de.syntax_institut.androidabschlussprojekt.viewmodel.DogViewModel
 
 @Composable
@@ -28,9 +29,11 @@ fun RandomDogScreen(viewModel: DogViewModel = viewModel()) {
             AsyncImage(
                 model = url,
                 contentDescription = "Zufälliges Hundebild",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(200.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .width(400.dp)
+                    .height(350.dp)
+                    .clip(RoundedCornerShape(16.dp))
             )
 
             val breedSegment = url.substringAfter("breeds/").substringBefore("/")
