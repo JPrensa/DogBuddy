@@ -9,8 +9,17 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 import de.syntax_institut.androidabschlussprojekt.model.Dog
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.auth.ktx.auth
+import android.util.Log
 
 class UploadViewModel : ViewModel() {
+    companion object {
+        private const val TAG = "UploadViewModel"
+    }
+    private val db = Firebase.firestore
+    private val auth = Firebase.auth
     var name by mutableStateOf("")
         private set
     var age by mutableStateOf("")
@@ -35,19 +44,27 @@ class UploadViewModel : ViewModel() {
     fun onUnavailableToChange(new: String) { unavailableTo = new }
 
     fun addDog(onSuccess: () -> Unit) {
-        viewModelScope.launch {
-            val id = System.currentTimeMillis().toString()
-            DogRepository.addDog(Dog(
-                id = id,
-                name = name,
-                age = age,
-                breed = breed,
-                imageUri = imageUri,
-                description = description,
-                unavailableFrom = unavailableFrom,
-                unavailableTo = unavailableTo
-            ))
+        val userId = auth.currentUser?.uid ?: return
+    val id = System.currentTimeMillis().toString()
+    val dogData = mapOf(
+        "id" to id,
+        "userId" to userId,
+        "name" to name,
+        "age" to age,
+        "breed" to breed,
+        "description" to description,
+        "unavailableFrom" to unavailableFrom,
+        "unavailableTo" to unavailableTo,
+        "imageUri" to imageUri?.toString()
+    )
+    db.collection("dogs").document(id)
+        .set(dogData)
+        .addOnSuccessListener {
+            Log.d(TAG, "Successfully added dog with id: $id")
             onSuccess()
         }
-    }
+        .addOnFailureListener { e ->
+            Log.e(TAG, "Error adding dog", e)
+        }
+}
 }

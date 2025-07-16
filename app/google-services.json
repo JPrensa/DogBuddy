@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "592274522345",
+    "project_id": "dogbuddy-30e8a",
+    "storage_bucket": "dogbuddy-30e8a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:592274522345:android:ab065669791cefc4677078",
+        "android_client_info": {
+          "package_name": "de.syntax_institut.androidabschlussprojekt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "592274522345-5efb5n0qeadeta8afa50mcl43bljit7j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSmNMkoU1PLTpraFXEizD897y8aojDhVU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "592274522345-5efb5n0qeadeta8afa50mcl43bljit7j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

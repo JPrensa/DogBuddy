@@ -20,13 +20,14 @@ import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.ui.Screen
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.ProfileViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ProfileScreen(
     navController: NavController,
     viewModel: ProfileViewModel = viewModel()
 ) {
-    viewModel.refresh()
+    
     val dogs = viewModel.dogs
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -84,7 +85,19 @@ fun ProfileScreen(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { /* TODO: Abmelden */ },
+            onClick = { navController.navigate(Screen.Upload.route) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Hund hinzufügen")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = {
+                FirebaseAuth.getInstance().signOut()
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.Home.route) { inclusive = true }
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Abmelden")

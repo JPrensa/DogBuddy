@@ -95,7 +95,7 @@ fun UploadScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(220.dp)
         )
         Text(text = "Von: $unavailableFrom", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Nicht verfügbar bis:", style = MaterialTheme.typography.bodyMedium)
@@ -109,11 +109,11 @@ fun UploadScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(220.dp)
         )
         Text(text = "Bis: $unavailableTo", style = MaterialTheme.typography.bodyMedium)
         Button(
-            onClick = { viewModel.addDog { navController.navigate(Screen.Profile.route) } },
+            onClick = { viewModel.addDog { navController.popBackStack() } },
             modifier = Modifier.fillMaxWidth(),
             enabled = name.isNotBlank() && age.isNotBlank() && breed.isNotBlank()
         ) {
