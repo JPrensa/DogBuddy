@@ -39,6 +39,7 @@ import androidx.activity.ComponentActivity
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import de.syntax_institut.androidabschlussprojekt.ui.RegisterScreen
+import de.syntax_institut.androidabschlussprojekt.ui.DogDetailScreen
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.collectAsState
@@ -145,8 +146,8 @@ fun AppNavHost() {
                     Screen.DogProfile.route,
                     arguments = listOf(navArgument("dogId") { type = NavType.StringType })
                 ) { backStackEntry ->
-                    val dogId = backStackEntry.arguments?.getString("dogId")
-                    DogProfileScreen(dogId)
+                    val dogId = backStackEntry.arguments?.getString("dogId") ?: return@composable
+                    DogDetailScreen(navController, dogId)
                 }
             }
         }
