@@ -20,6 +20,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UploadViewModel
 import de.syntax_institut.androidabschlussprojekt.ui.Screen
+import de.syntax_institut.androidabschlussprojekt.ui.components.FormTextField
+import de.syntax_institut.androidabschlussprojekt.ui.components.ImagePicker
+import de.syntax_institut.androidabschlussprojekt.ui.components.DateSelector
+import de.syntax_institut.androidabschlussprojekt.ui.components.FullWidthButton
 
 @Composable
 fun UploadScreen(
@@ -45,79 +49,51 @@ fun UploadScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        OutlinedTextField(
+        FormTextField(
             value = name,
             onValueChange = viewModel::onNameChange,
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            label = "Name"
         )
-        OutlinedTextField(
+        FormTextField(
             value = age,
             onValueChange = viewModel::onAgeChange,
-            label = { Text("Alter") },
-            modifier = Modifier.fillMaxWidth()
+            label = "Alter"
         )
-        OutlinedTextField(
+        FormTextField(
             value = breed,
             onValueChange = viewModel::onBreedChange,
-            label = { Text("Rasse") },
-            modifier = Modifier.fillMaxWidth()
+            label = "Rasse"
         )
-        OutlinedTextField(
+        FormTextField(
             value = description,
             onValueChange = viewModel::onDescriptionChange,
-            label = { Text("Beschreibung") },
-            modifier = Modifier.fillMaxWidth()
+            label = "Beschreibung"
         )
-        Button(
-            onClick = { launcher.launch("image/*") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Bild wählen")
-        }
-        imageUri?.let {
-            AsyncImage(
-                model = it,
-                contentDescription = "Gewähltes Bild",
-                modifier = Modifier
-                    .size(128.dp)
-                    .clip(CircleShape)
-            )
-        }
-        Text(text = "Nicht verfügbar von:", style = MaterialTheme.typography.bodyMedium)
-        AndroidView(
-            factory = { context ->
-                CalendarView(context).apply {
-                    setOnDateChangeListener { _, year, month, dayOfMonth ->
-                        viewModel.onUnavailableFromChange("$dayOfMonth.${month+1}.$year")
-                    }
-                }
-            },
+        ImagePicker(
+            model = imageUri,
+            onPick = viewModel::onImageUriChange,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
+                .size(128.dp)
+                .clip(MaterialTheme.shapes.small)
+                
         )
-        Text(text = "Von: $unavailableFrom", style = MaterialTheme.typography.bodyMedium)
-        Text(text = "Nicht verfügbar bis:", style = MaterialTheme.typography.bodyMedium)
-        AndroidView(
-            factory = { context ->
-                CalendarView(context).apply {
-                    setOnDateChangeListener { _, year, month, dayOfMonth ->
-                        viewModel.onUnavailableToChange("$dayOfMonth.${month+1}.$year")
-                    }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
+        
+        DateSelector(
+            label = "Nicht verfügbar von:",
+            selectedDate = unavailableFrom,
+            onDateChange = viewModel::onUnavailableFromChange
         )
-        Text(text = "Bis: $unavailableTo", style = MaterialTheme.typography.bodyMedium)
-        Button(
+
+        DateSelector(
+            label = "Nicht verfügbar bis:",
+            selectedDate = unavailableTo,
+            onDateChange = viewModel::onUnavailableToChange
+        )
+
+        FullWidthButton(
             onClick = { viewModel.addDog { navController.popBackStack() } },
-            modifier = Modifier.fillMaxWidth(),
+            text = "Hund hinzufügen",
             enabled = name.isNotBlank() && age.isNotBlank() && breed.isNotBlank()
-        ) {
-            Text("Hund hinzufügen")
-        }
+        )
     }
 }

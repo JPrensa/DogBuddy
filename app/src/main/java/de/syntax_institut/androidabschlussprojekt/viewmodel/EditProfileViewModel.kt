@@ -5,6 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import de.syntax_institut.androidabschlussprojekt.model.UserProfile
 
 class EditProfileViewModel : ViewModel() {
     var name by mutableStateOf(UserRepository.name)
@@ -25,11 +29,24 @@ class EditProfileViewModel : ViewModel() {
     fun onAddressChange(new: String) { address = new }
 
     fun save(onDone: () -> Unit) {
-        UserRepository.name = name
-        UserRepository.email = email
-        UserRepository.phone = phone
-        UserRepository.age = age
-        UserRepository.address = address
-        onDone()
+        viewModelScope.launch {
+            // Firestore aktualisieren
+            FirestoreRepository.updateUserProfile(
+                UserProfile(
+                    name = name,
+                    email = email,
+                    phone = phone,
+                    age = age,
+                    address = address
+                )
+            )
+            // Lokale Repository-Werte setzen
+            UserRepository.name = name
+            UserRepository.email = email
+            UserRepository.phone = phone
+            UserRepository.age = age
+            UserRepository.address = address
+            onDone()
+        }
     }
 }

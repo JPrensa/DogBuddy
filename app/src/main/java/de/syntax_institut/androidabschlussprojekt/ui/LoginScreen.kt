@@ -25,6 +25,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.LoginViewModel
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.res.painterResource
+import de.syntax_institut.androidabschlussprojekt.R
 
 @Composable
 fun LoginScreen(
@@ -48,6 +52,11 @@ fun LoginScreen(
         verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+                Image(
+            painter = painterResource(id = R.drawable.login_logo),
+            contentDescription = "Login Logo",
+            modifier = Modifier.size(320.dp).padding(bottom = 16.dp)
+        )
         Text(text = "Login", style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(

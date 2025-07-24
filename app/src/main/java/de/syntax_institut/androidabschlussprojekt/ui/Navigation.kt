@@ -62,6 +62,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.BreedListScreen
 import de.syntax_institut.androidabschlussprojekt.ui.UploadScreen as MVVMUploadScreen
 import de.syntax_institut.androidabschlussprojekt.ui.ProfileScreen as MVVMProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.EditProfileScreen as MVVMEditProfileScreen
+import de.syntax_institut.androidabschlussprojekt.ui.CareDetailScreen
 import androidx.compose.foundation.rememberScrollState
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -87,6 +88,9 @@ sealed class Screen(val route: String, val title: String) {
     object Profile : Screen("profile", "Profile")
     object DogProfile : Screen("dog_profile/{dogId}", "Dog Profile") {
         fun createRoute(dogId: String) = "dog_profile/$dogId"
+    }
+    object CareDetail : Screen("care_detail/{dogId}", "Betreuungsübersicht") {
+        fun createRoute(dogId: String) = "care_detail/$dogId"
     }
     object EditProfile : Screen("edit_profile", "Profil bearbeiten")
 }
@@ -148,6 +152,14 @@ fun AppNavHost() {
                 ) { backStackEntry ->
                     val dogId = backStackEntry.arguments?.getString("dogId") ?: return@composable
                     DogDetailScreen(navController, dogId)
+                }
+
+                composable(
+                    Screen.CareDetail.route,
+                    arguments = listOf(navArgument("dogId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val dogId = backStackEntry.arguments?.getString("dogId") ?: return@composable
+                    CareDetailScreen(navController, dogId)
                 }
             }
         }

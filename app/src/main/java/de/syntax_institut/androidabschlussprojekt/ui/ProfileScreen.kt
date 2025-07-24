@@ -21,6 +21,11 @@ import de.syntax_institut.androidabschlussprojekt.ui.Screen
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
+import de.syntax_institut.androidabschlussprojekt.ui.components.DogAvatar
+import de.syntax_institut.androidabschlussprojekt.ui.components.ImagePicker
+
+
+
 
 @Composable
 fun ProfileScreen(
@@ -29,6 +34,8 @@ fun ProfileScreen(
 ) {
     
     val dogs = viewModel.dogs
+    val caredDogs = viewModel.caredDogs
+    
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -52,10 +59,25 @@ fun ProfileScreen(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Image(
-            painter = painterResource(id = R.drawable.profilbild1),
-            contentDescription = "Profilbild",
+
+        Text(text = "Betreute Hunde", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(caredDogs) { dog ->
+                DogAvatar(dog = dog, modifier = Modifier.size(80.dp), onClick = {
+                    navController.navigate(Screen.CareDetail.createRoute(dog.id))
+                })
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        ImagePicker(
+            model = viewModel.profileImageUrl ?: R.drawable.profilbild1,
+            onPick = { uri -> uri?.let { viewModel.uploadProfileImage(it) } },
             modifier = Modifier
+                .size(128.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.primaryContainer)
                 .padding(16.dp)
