@@ -16,25 +16,33 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.FieldValue
+
+
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.viewmodel.DogDetailViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun DogDetailScreen(
     navController: NavController,
     dogId: String
 ) {
+    val detailViewModel: DogDetailViewModel = viewModel()
+    val requested by detailViewModel.requested.collectAsState(initial = false)
     val homeViewModel: HomeViewModel = viewModel()
     val dogs by homeViewModel.dogs.collectAsState(initial = emptyList())
     val dog = dogs.find { it.id == dogId } ?: return
     val context = LocalContext.current
-    val db = Firebase.firestore
-    val auth = Firebase.auth
-    var requested by remember { mutableStateOf(false) }
+    LaunchedEffect(requested) {
+        if (requested) {
+            Toast.makeText(context, "Interesse bestätigt", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    
+    
 
     Column(
         modifier = Modifier
@@ -67,19 +75,10 @@ fun DogDetailScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                if (!requested) {
-                    val uid = auth.currentUser?.uid ?: return@Button
-                    db.collection("dogs").document(dogId)
-                        .update("interestedUsers", FieldValue.arrayUnion(uid))
-                        .addOnSuccessListener {
-                            Toast.makeText(context, "Interesse bestätigt", Toast.LENGTH_SHORT).show()
-                            requested = true
-                        }
-                        .addOnFailureListener {
-                            Toast.makeText(context, "Fehler beim Bestätigen", Toast.LENGTH_SHORT).show()
-                        }
-                }
-            },
+                    if (!requested) {
+                        detailViewModel.requestCare(dogId)
+                    }
+                },
             enabled = !requested,
             modifier = Modifier.fillMaxWidth()
         ) {
