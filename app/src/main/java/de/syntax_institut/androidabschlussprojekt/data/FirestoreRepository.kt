@@ -2,22 +2,29 @@ package de.syntax_institut.androidabschlussprojekt.data
 
 import android.net.Uri
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
+import com.google.firebase.storage.ktx.*
+
+
+
+
+
 import com.google.firebase.auth.ktx.auth
+
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import de.syntax_institut.androidabschlussprojekt.model.Dog
 import de.syntax_institut.androidabschlussprojekt.model.UserProfile
-import com.google.firebase.firestore.SetOptions
 
 object FirestoreRepository {
     private val auth = Firebase.auth
     private val db = Firebase.firestore
     private val storage = Firebase.storage
+    
 
     fun getAllDogsFlow(): Flow<List<Dog>> = callbackFlow {
         val listener = db.collection("dogs")
