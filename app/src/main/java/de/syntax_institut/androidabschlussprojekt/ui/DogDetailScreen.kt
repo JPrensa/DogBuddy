@@ -14,6 +14,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import androidx.compose.foundation.Image
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.painterResource
+import de.syntax_institut.androidabschlussprojekt.R
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
 
@@ -51,15 +57,35 @@ fun DogDetailScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        AsyncImage(
-            model = dog.imageUri,
-            contentDescription = dog.name,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
+        if (dog.imageUri?.toString()?.startsWith("data:image") == true) {
+            val uriStr = dog.imageUri.toString()
+            val base64 = uriStr.substringAfter(",")
+            val bitmap = remember(base64) {
+                val bytes = Base64.decode(base64, Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
+            }
+            Image(
+                bitmap = bitmap,
+                contentDescription = dog.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        } else {
+            AsyncImage(
+                model = dog.imageUri,
+                placeholder = painterResource(R.drawable.baseline_pets_24),
+                error = painterResource(R.drawable.baseline_pets_24),
+                contentDescription = dog.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        }
         Text(text = dog.name, style = MaterialTheme.typography.headlineSmall)
         Text(text = "Rasse: ${dog.breed}", style = MaterialTheme.typography.bodyMedium)
         Text(text = "Alter: ${dog.age}", style = MaterialTheme.typography.bodyMedium)

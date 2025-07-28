@@ -56,6 +56,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.CalendarView
 import androidx.navigation.NavType
 import androidx.compose.foundation.Image
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.foundation.verticalScroll
 import de.syntax_institut.androidabschlussprojekt.data.UserRepository
 import de.syntax_institut.androidabschlussprojekt.ui.BreedListScreen
@@ -221,15 +224,34 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     dog.imageUri?.let { uri ->
-                        AsyncImage(
-                            model = uri,
-                            contentDescription = dog.name,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
+                        if (uri.toString().startsWith("data:image")) {
+                            val base64 = uri.toString().substringAfter(",")
+                            val bitmap = remember(base64) {
+                                val bytes = Base64.decode(base64, Base64.DEFAULT)
+                                BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
+                            }
+                            Image(
+                                bitmap = bitmap,
+                                contentDescription = dog.name,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        } else {
+                            AsyncImage(
+                                model = uri.toString(),
+                                placeholder = painterResource(R.drawable.baseline_pets_24),
+                                error = painterResource(R.drawable.baseline_pets_24),
+                                contentDescription = dog.name,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                     Text(text = dog.name, style = MaterialTheme.typography.headlineSmall)
@@ -463,13 +485,33 @@ fun DogProfileScreen(dogId: String?) {
                     "2" -> R.drawable.dog2
                     else -> R.drawable.baseline_pets_24
                 }
-                AsyncImage(
-                    model = dog.imageUri ?: profileImageRes,
-                    contentDescription = "Profilbild von ${dog.name}",
-                    modifier = Modifier
-                        .size(128.dp)
-                        .clip(CircleShape)
-                )
+                if (dog.imageUri?.toString()?.startsWith("data:image") == true) {
+                    val uriStr = dog.imageUri.toString()
+                    val base64 = uriStr.substringAfter(",")
+                    val bitmap = remember(base64) {
+                        val bytes = Base64.decode(base64, Base64.DEFAULT)
+                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
+                    }
+                    Image(
+                        bitmap = bitmap,
+                        contentDescription = "Profilbild von ${dog.name}",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(128.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    AsyncImage(
+                        model = dog.imageUri ?: profileImageRes,
+                        placeholder = painterResource(R.drawable.baseline_pets_24),
+                        error = painterResource(R.drawable.baseline_pets_24),
+                        contentDescription = "Profilbild von ${dog.name}",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(128.dp)
+                            .clip(CircleShape)
+                    )
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = dog.name, style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(8.dp))

@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.ui.Screen
 import androidx.navigation.NavController
@@ -49,7 +50,10 @@ fun ProfileScreen(
         ) {
             items(dogs) { dog ->
                 AsyncImage(
-                    model = dog.imageUri ?: R.drawable.baseline_pets_24,
+                    model = dog.imageUri?.toString() ?: R.drawable.baseline_pets_24,
+                    placeholder = painterResource(R.drawable.baseline_pets_24),
+                    error = painterResource(R.drawable.baseline_pets_24),
+                    contentScale = ContentScale.Crop,
                     contentDescription = dog.name,
                     modifier = Modifier
                         .size(80.dp)

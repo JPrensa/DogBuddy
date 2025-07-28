@@ -1,8 +1,11 @@
 package de.syntax_institut.androidabschlussprojekt.data
 
 import android.net.Uri
+import android.content.Context
+import android.util.Base64
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import android.util.Log
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.FieldValue
@@ -32,7 +35,8 @@ object FirestoreRepository {
                     val description = doc.getString("description")
                     val unavailableFrom = doc.getString("unavailableFrom")
                     val unavailableTo = doc.getString("unavailableTo")
-                    val imageUriStr = doc.getString("imageUri")
+                    val imageBase64 = doc.getString("imageBase64")
+                    val imageUriStr = imageBase64?.let { "data:image/jpeg;base64,$it" } ?: doc.getString("imageUri")
                     val imageUri = imageUriStr?.let { Uri.parse(it) }
                     Dog(id = id, name = name, age = age, breed = breed, imageUri = imageUri, description = description, unavailableFrom = unavailableFrom, unavailableTo = unavailableTo)
                 }
@@ -55,7 +59,8 @@ object FirestoreRepository {
                     val description = doc.getString("description")
                     val unavailableFrom = doc.getString("unavailableFrom")
                     val unavailableTo = doc.getString("unavailableTo")
-                    val imageUriStr = doc.getString("imageUri")
+                    val imageBase64 = doc.getString("imageBase64")
+                    val imageUriStr = imageBase64?.let { "data:image/jpeg;base64,$it" } ?: doc.getString("imageUri")
                     val imageUri = imageUriStr?.let { Uri.parse(it) }
                     Dog(id = id, name = name, age = age, breed = breed, imageUri = imageUri, description = description, unavailableFrom = unavailableFrom, unavailableTo = unavailableTo)
                 }
@@ -66,6 +71,18 @@ object FirestoreRepository {
 
     suspend fun addDog(dog: Dog) {
         val uid = auth.currentUser?.uid ?: return
+        // Attempt to upload image, catch errors
+        val imageUrl: String? = try {
+            dog.imageUri?.let { uri ->
+                val ref = storage.reference.child("dog_images/${dog.id}.jpg")
+                ref.putFile(uri).await()
+                ref.downloadUrl.await().toString()
+            }
+        } catch (e: Exception) {
+            Log.e("FirestoreRepository", "Failed to upload image for dog ${dog.id}", e)
+            null
+        }
+        // Prepare data with optional imageUri
         val data = mapOf(
             "id" to dog.id,
             "userId" to uid,
@@ -75,7 +92,37 @@ object FirestoreRepository {
             "description" to dog.description,
             "unavailableFrom" to dog.unavailableFrom,
             "unavailableTo" to dog.unavailableTo,
-            "imageUri" to dog.imageUri?.toString(),
+            "imageUri" to imageUrl,
+            "interestedUsers" to listOf<String>()
+        )
+        // Write to Firestore (overwrites Base64 approach)
+        db.collection("dogs").document(dog.id).set(data).await()
+    }
+    
+    /** Firestore-only Base64 image upload **/
+    suspend fun addDogBase64(dog: Dog, context: Context) {
+        val uid = auth.currentUser?.uid ?: return
+        // Encode image as Base64
+        val imageBase64: String? = try {
+            dog.imageUri?.let { uri ->
+                context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    ?.let { bytes -> Base64.encodeToString(bytes, Base64.NO_WRAP) }
+            }
+        } catch (e: Exception) {
+            Log.e("FirestoreRepository", "Failed to encode image for dog ${dog.id}", e)
+            null
+        }
+        // Prepare data including Base64 string
+        val data = mapOf(
+            "id" to dog.id,
+            "userId" to uid,
+            "name" to dog.name,
+            "age" to dog.age,
+            "breed" to dog.breed,
+            "description" to dog.description,
+            "unavailableFrom" to dog.unavailableFrom,
+            "unavailableTo" to dog.unavailableTo,
+            "imageBase64" to imageBase64,
             "interestedUsers" to listOf<String>()
         )
         db.collection("dogs").document(dog.id).set(data).await()
@@ -103,7 +150,8 @@ object FirestoreRepository {
                     val description = doc.getString("description")
                     val unavailableFrom = doc.getString("unavailableFrom")
                     val unavailableTo = doc.getString("unavailableTo")
-                    val imageUriStr = doc.getString("imageUri")
+                    val imageBase64 = doc.getString("imageBase64")
+                    val imageUriStr = imageBase64?.let { "data:image/jpeg;base64,$it" } ?: doc.getString("imageUri")
                     val imageUri = imageUriStr?.let { Uri.parse(it) }
                     val mealsGiven = (doc.getLong("mealsGiven") ?: 0).toInt()
                     val walksDone = (doc.getLong("walksDone") ?: 0).toInt()

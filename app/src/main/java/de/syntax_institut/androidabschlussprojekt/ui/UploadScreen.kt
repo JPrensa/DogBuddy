@@ -16,6 +16,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UploadViewModel
@@ -30,6 +33,8 @@ fun UploadScreen(
     navController: NavController,
     viewModel: UploadViewModel = viewModel()
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val name = viewModel.name
     val age = viewModel.age
     val breed = viewModel.breed
@@ -91,7 +96,29 @@ fun UploadScreen(
         )
 
         FullWidthButton(
-            onClick = { viewModel.addDog { navController.popBackStack() } },
+            onClick = {
+                coroutineScope.launch {
+                    val id = System.currentTimeMillis().toString()
+                    val dog = de.syntax_institut.androidabschlussprojekt.model.Dog(
+                        id = id,
+                        name = viewModel.name,
+                        age = viewModel.age,
+                        breed = viewModel.breed,
+                        imageUri = viewModel.imageUri,
+                        description = viewModel.description,
+                        unavailableFrom = viewModel.unavailableFrom,
+                        unavailableTo = viewModel.unavailableTo
+                    )
+                    try {
+                        de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository.addDogBase64(dog, context)
+                        android.widget.Toast.makeText(context, "Hund gespeichert", android.widget.Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(context, "Fehler: " + (e.localizedMessage ?: "Unbekannter Fehler"), android.widget.Toast.LENGTH_LONG).show()
+                        android.util.Log.e("UploadScreen", "Error adding dog", e)
+                    }
+                    navController.popBackStack()
+                }
+            },
             text = "Hund hinzufügen",
             enabled = name.isNotBlank() && age.isNotBlank() && breed.isNotBlank()
         )

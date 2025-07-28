@@ -9,6 +9,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.model.Dog
 
@@ -20,7 +22,10 @@ fun DogAvatar(
     onClick: () -> Unit
 ) {
     AsyncImage(
-        model = dog.imageUri ?: R.drawable.baseline_pets_24,
+        model = dog.imageUri?.toString() ?: R.drawable.baseline_pets_24,
+        placeholder = painterResource(R.drawable.baseline_pets_24),
+        error = painterResource(R.drawable.baseline_pets_24),
+        contentScale = ContentScale.Crop,
         contentDescription = dog.name,
         modifier = modifier
             .size(size)
