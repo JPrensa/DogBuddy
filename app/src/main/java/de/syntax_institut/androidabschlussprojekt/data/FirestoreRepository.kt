@@ -2,14 +2,8 @@ package de.syntax_institut.androidabschlussprojekt.data
 
 import android.net.Uri
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.*
-
-
-
-
-
+import com.google.firebase.storage.ktx.storage
 import com.google.firebase.auth.ktx.auth
-
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
@@ -42,7 +36,7 @@ object FirestoreRepository {
                     val imageUri = imageUriStr?.let { Uri.parse(it) }
                     Dog(id = id, name = name, age = age, breed = breed, imageUri = imageUri, description = description, unavailableFrom = unavailableFrom, unavailableTo = unavailableTo)
                 }
-                trySend(list)
+                trySend(list).isSuccess
             }
         awaitClose { listener.remove() }
     }

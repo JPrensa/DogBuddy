@@ -68,6 +68,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
     implementation(libs.firebase.firestore.ktx)
+    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
