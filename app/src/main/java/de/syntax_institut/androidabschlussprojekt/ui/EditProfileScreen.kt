@@ -19,8 +19,16 @@ import androidx.compose.ui.res.painterResource
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
 import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+import android.widget.Toast
+import android.util.Log
+import android.util.Base64
 import de.syntax_institut.androidabschlussprojekt.model.Dog
 import de.syntax_institut.androidabschlussprojekt.model.UserProfile
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.Alignment
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,6 +58,15 @@ fun EditProfileScreen(
     val phone = viewModel.phone
     val age = viewModel.age
     val address = viewModel.address
+        // Profilbild auswählen
+        val currentProfile by FirestoreRepository.getUserProfileFlow().collectAsState(initial = UserProfile())
+        var selectedProfileUri by remember { mutableStateOf<Uri?>(null) }
+        val profileImageLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            selectedProfileUri = uri
+        }
+        val displayProfile: Any? = selectedProfileUri ?: currentProfile.imageUrl ?: R.drawable.baseline_image_24
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         var dogForms by remember { mutableStateOf(listOf<DogForm>()) }
@@ -66,6 +83,17 @@ fun EditProfileScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        AsyncImage(
+            model = displayProfile,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(128.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .clickable { profileImageLauncher.launch("image/*") }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         FormSection("Profil bearbeiten")
         LabeledTextField(label = "Name", value = name, onValueChange = viewModel::onNameChange)
         LabeledTextField(label = "Email", value = email, onValueChange = viewModel::onEmailChange)
@@ -95,31 +123,59 @@ fun EditProfileScreen(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    val profile = UserProfile(name = name, email = email, phone = phone, age = age, address = address)
-                    FirestoreRepository.updateUserProfile(profile)
-                    UserRepository.name = name
-                    UserRepository.email = email
-                    UserRepository.phone = phone
-                    UserRepository.age = age
-                    UserRepository.address = address
-                    dogForms.forEach { form ->
-                        FirestoreRepository.addDogBase64(
-                            Dog(
-                                id = form.id,
-                                name = form.name,
-                                age = form.age,
-                                breed = "",
-                                imageUri = form.imageUri,
-                                description = null,
-                                unavailableFrom = null,
-                                unavailableTo = null
-                            ),
-                            context
+                    var newImageUrl: String? = currentProfile.imageUrl
+                    if (selectedProfileUri != null) {
+                            try {
+                                val inputStream = context.contentResolver.openInputStream(selectedProfileUri!!)
+                                inputStream?.use { stream ->
+                                    val bytes = stream.readBytes()
+                                    val base64 = Base64.encodeToString(bytes, Base64.DEFAULT)
+                                    newImageUrl = "data:image/jpeg;base64,$base64"
+                                }
+                            } catch (e: Exception) {
+                                Log.e("EditProfileScreen", "Profilbild-Konvertierung fehlgeschlagen", e)
+                            }
+                        }
+                        val profile = UserProfile(
+                            name = name,
+                            email = email,
+                            phone = phone,
+                            age = age,
+                            address = address,
+                            imageUrl = newImageUrl
                         )
+                    try {
+                        FirestoreRepository.updateUserProfile(profile)
+                        UserRepository.name = name
+                        UserRepository.email = email
+                        UserRepository.phone = phone
+                        UserRepository.age = age
+                        UserRepository.address = address
+                        dogForms.forEach { form ->
+                            FirestoreRepository.addDogBase64(
+                                Dog(
+                                    id = form.id,
+                                    name = form.name,
+                                    age = form.age,
+                                    breed = "",
+                                    imageUri = form.imageUri,
+                                    description = null,
+                                    unavailableFrom = null,
+                                    unavailableTo = null
+                                ),
+                                context
+                            )
+                        }
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Profil gespeichert", Toast.LENGTH_SHORT).show()
+                            navController.popBackStack()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Fehler beim Speichern: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        }
                     }
-                    withContext(Dispatchers.Main) {
-                        navController.popBackStack()
-                    }
+
                 }
             },
             modifier = Modifier.fillMaxWidth()

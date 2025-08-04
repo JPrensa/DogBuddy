@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -15,6 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import coil.compose.AsyncImage
 
 
@@ -39,22 +44,22 @@ fun ImagePicker(
     onPick: (Uri?) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectedUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> onPick(uri) }
-
-    FullWidthButton(
-        onClick = { launcher.launch("image/*") },
-        text = "Bild wählen"
-    )
-
-    model?.let { m ->
-        AsyncImage(
-            model = m,
-            contentDescription = null,
-            modifier
-        )
+    ) { uri: Uri? ->
+        selectedUri = uri
+        onPick(uri)
     }
+
+    
+
+    val displayModel: Any? = selectedUri ?: model
+    AsyncImage(
+        model = displayModel,
+        contentDescription = null,
+        modifier = modifier.clickable { launcher.launch("image/*") }
+    )
 }
 
 @Composable

@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Base64
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import com.google.firebase.FirebaseApp
 import android.util.Log
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -20,7 +21,7 @@ import de.syntax_institut.androidabschlussprojekt.model.UserProfile
 object FirestoreRepository {
     private val auth = Firebase.auth
     private val db = Firebase.firestore
-    private val storage = Firebase.storage
+    private val storage = Firebase.storage("gs://${FirebaseApp.getInstance().options.storageBucket}")
     
 
     fun getAllDogsFlow(): Flow<List<Dog>> = callbackFlow {
@@ -244,5 +245,16 @@ object FirestoreRepository {
     /** Delete a dog document **/
     suspend fun deleteDog(dogId: String) {
         db.collection("dogs").document(dogId).delete().await()
+    }
+
+    /** Flow of interested user IDs for a dog **/
+    fun getInterestedUsersFlow(dogId: String): Flow<List<String>> = callbackFlow {
+        val listener = db.collection("dogs").document(dogId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+                val uids = snapshot.get("interestedUsers") as? List<String> ?: emptyList()
+                trySend(uids)
+            }
+        awaitClose { listener.remove() }
     }
 }

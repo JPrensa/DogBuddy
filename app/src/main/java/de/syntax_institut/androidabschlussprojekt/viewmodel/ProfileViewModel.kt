@@ -11,6 +11,8 @@ import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
 import de.syntax_institut.androidabschlussprojekt.data.UserRepository
 import de.syntax_institut.androidabschlussprojekt.model.Dog
 import android.net.Uri
+import de.syntax_institut.androidabschlussprojekt.model.UserProfile
+import kotlinx.coroutines.launch
 
 class ProfileViewModel : ViewModel() {
 
@@ -53,6 +55,30 @@ class ProfileViewModel : ViewModel() {
                 caredDogs.clear()
                 caredDogs.addAll(list)
             }
+        }
+    }
+
+    // Edit profile handlers
+    fun onNameChange(new: String) { name = new }
+    fun onEmailChange(new: String) { email = new }
+    fun onPhoneChange(new: String) { phone = new }
+    fun onAgeChange(new: String) { age = new }
+    fun onAddressChange(new: String) { address = new }
+
+    /** Save updated profile to Firestore **/
+    fun saveProfile(onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            // Prepare UserProfile with current data
+            val profile = UserProfile(
+                name = name,
+                email = email,
+                phone = phone,
+                age = age,
+                address = address,
+                imageUrl = profileImageUrl
+            )
+            FirestoreRepository.updateUserProfile(profile)
+            onDone()
         }
     }
 
