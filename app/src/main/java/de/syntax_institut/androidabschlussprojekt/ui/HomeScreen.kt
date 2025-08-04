@@ -34,6 +34,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.syntax_institut.androidabschlussprojekt.R
+import androidx.compose.ui.graphics.Color
+import de.syntax_institut.androidabschlussprojekt.ui.components.Background
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 
 @Composable
@@ -42,14 +44,18 @@ fun HomeScreen(
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val dogs by homeViewModel.dogs.collectAsState(initial = emptyList())
+    Background {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
         items(dogs) { dog ->
-            Card(
+            Text(text = "Offener Anzeige", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(colors = CardDefaults.cardColors(containerColor = Color.White), 
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { navController.navigate(Screen.DogProfile.createRoute(dog.id)) },
@@ -109,5 +115,6 @@ fun HomeScreen(
                 }
             }
         }
+    }
     }
 }

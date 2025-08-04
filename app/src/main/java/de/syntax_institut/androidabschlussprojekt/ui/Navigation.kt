@@ -20,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.material3.Scaffold
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
@@ -66,6 +67,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.UploadScreen as MVVMUploadS
 import de.syntax_institut.androidabschlussprojekt.ui.ProfileScreen as MVVMProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.EditProfileScreen as MVVMEditProfileScreen
 import de.syntax_institut.androidabschlussprojekt.ui.CareDetailScreen
+import de.syntax_institut.androidabschlussprojekt.ui.OwnerDetailScreen
 import androidx.compose.foundation.rememberScrollState
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -81,6 +83,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.OutlinedButton
+import de.syntax_institut.androidabschlussprojekt.ui.components.Background
 
 sealed class Screen(val route: String, val title: String) {
     object Login : Screen("login", "Login")
@@ -95,6 +98,9 @@ sealed class Screen(val route: String, val title: String) {
     object CareDetail : Screen("care_detail/{dogId}", "Betreuungsübersicht") {
         fun createRoute(dogId: String) = "care_detail/$dogId"
     }
+        object OwnerDetail : Screen("owner_detail/{ownerId}", "Besitzer") {
+        fun createRoute(ownerId: String) = "owner_detail/$ownerId"
+    }
     object EditProfile : Screen("edit_profile", "Profil bearbeiten")
 }
 
@@ -105,6 +111,7 @@ fun AppNavHost() {
     val loginViewModel: LoginViewModel = viewModel(activity)
     val isUserLoggedIn by loginViewModel.isLoggedIn
     val navController = rememberNavController()
+    Background {
     if (!isUserLoggedIn) {
         NavHost(
             navController = navController,
@@ -136,7 +143,10 @@ fun AppNavHost() {
             }
         }
     } else {
-        Scaffold(
+        
+            
+            Scaffold(
+            containerColor = Color.Transparent,
             bottomBar = { BottomBar(navController) }
         ) { innerPadding ->
             NavHost(
@@ -164,8 +174,16 @@ fun AppNavHost() {
                     val dogId = backStackEntry.arguments?.getString("dogId") ?: return@composable
                     CareDetailScreen(navController, dogId)
                 }
+                composable(
+                    Screen.OwnerDetail.route,
+                    arguments = listOf(navArgument("ownerId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val ownerId = backStackEntry.arguments?.getString("ownerId") ?: return@composable
+                    OwnerDetailScreen(navController, ownerId)
+                }
             }
         }
+    }
     }
 }
 
@@ -174,7 +192,10 @@ fun BottomBar(navController: NavController) {
     val items = listOf(Screen.Home, Screen.Upload, Screen.Breeds, Screen.Profile)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.50f),
+        tonalElevation = 4.dp
+    ) {
         items.forEach { screen ->
             NavigationBarItem(
                 icon = {
@@ -205,144 +226,3 @@ fun BottomBar(navController: NavController) {
 
 
 
-@Composable
-fun DogProfileScreen(dogId: String?) {
-    val dog = DogRepository.dogs.find { it.id == dogId } ?: return
-    val now = LocalDateTime.now()
-    val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Profilbild Hund
-                val profileImageRes = when (dog.id) {
-                    "1" -> R.drawable.dog1
-                    "2" -> R.drawable.dog2
-                    else -> R.drawable.baseline_pets_24
-                }
-                if (dog.imageUri?.toString()?.startsWith("data:image") == true) {
-                    val uriStr = dog.imageUri.toString()
-                    val base64 = uriStr.substringAfter(",")
-                    val bitmap = remember(base64) {
-                        val bytes = Base64.decode(base64, Base64.DEFAULT)
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap()
-                    }
-                    Image(
-                        bitmap = bitmap,
-                        contentDescription = "Profilbild von ${dog.name}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(128.dp)
-                            .clip(CircleShape)
-                    )
-                } else {
-                    AsyncImage(
-                        model = dog.imageUri ?: profileImageRes,
-                        placeholder = painterResource(R.drawable.baseline_pets_24),
-                        error = painterResource(R.drawable.baseline_pets_24),
-                        contentDescription = "Profilbild von ${dog.name}",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(128.dp)
-                            .clip(CircleShape)
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = dog.name, style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Rasse: ${dog.breed}", style = MaterialTheme.typography.bodyMedium)
-                Text(text = "Alter: ${dog.age}", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(16.dp))
-                Divider(modifier = Modifier.fillMaxWidth())
-                Spacer(modifier = Modifier.height(16.dp))
-                // Betreuung
-                if (dog.isCared) {
-                    // Profilbild Betreuer
-                    val caretakerImageRes = when (dog.caretakerName) {
-                        "Anna Schmidt" -> R.drawable.baseline_person_24
-                        else -> R.drawable.baseline_person_24
-                    }
-                    Image(
-                        painter = painterResource(id = caretakerImageRes),
-                        contentDescription = "Profilbild Betreuer",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Betreut von: ${dog.caretakerName}", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // Betreuungstage
-                    Text(text = "Tage betreut: ${dog.daysCared}", style = MaterialTheme.typography.bodyMedium)
-                    Text(text = "Verbleibende Tage: ${dog.totalCareDays - dog.daysCared}", style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // Mahlzeiten
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        repeat(3) { index ->
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_local_dining_24),
-                                contentDescription = null,
-                                tint = if (index < dog.mealsGiven) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "${dog.mealsGiven}/3", style = MaterialTheme.typography.bodyMedium)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // Spaziergänge
-                    Text(text = "Spaziergänge", style = MaterialTheme.typography.bodyMedium)
-                    LinearProgressIndicator(
-                        progress = dog.walksDone.toFloat() / dog.totalWalks.coerceAtLeast(1),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp)),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "${dog.walksDone}/${dog.totalWalks}", style = MaterialTheme.typography.bodySmall)
-                } else {
-                    Text(text = "Bei mir zu Hause", style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        // Erster Spaziergang
-        Text(text = "Erster Spaziergang", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(8.dp))
-        AsyncImage(
-            model = R.drawable.spazieren1,
-            contentDescription = "Spaziergang",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "Datum: ${now.format(dateFormatter)}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Uhrzeit: ${now.format(timeFormatter)}", style = MaterialTheme.typography.bodyMedium)
-        }
-    }
-}

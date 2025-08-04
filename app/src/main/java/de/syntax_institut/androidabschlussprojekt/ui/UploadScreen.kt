@@ -27,6 +27,7 @@ import de.syntax_institut.androidabschlussprojekt.ui.components.FormTextField
 import de.syntax_institut.androidabschlussprojekt.ui.components.ImagePicker
 import de.syntax_institut.androidabschlussprojekt.ui.components.DateSelector
 import de.syntax_institut.androidabschlussprojekt.ui.components.FullWidthButton
+import de.syntax_institut.androidabschlussprojekt.ui.components.Background
 
 @Composable
 fun UploadScreen(
@@ -42,18 +43,23 @@ fun UploadScreen(
     val imageUri = viewModel.imageUri
     val unavailableFrom = viewModel.unavailableFrom
     val unavailableTo = viewModel.unavailableTo
+    Background {
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> viewModel.onImageUriChange(uri) }
 
     Column(
+
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
+
     ) {
+        Text(text = "Hunde Anzeige starten", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(8.dp))
         FormTextField(
             value = name,
             onValueChange = viewModel::onNameChange,
@@ -122,5 +128,6 @@ fun UploadScreen(
             text = "Hund hinzufügen",
             enabled = name.isNotBlank() && age.isNotBlank() && breed.isNotBlank()
         )
+    }
     }
 }

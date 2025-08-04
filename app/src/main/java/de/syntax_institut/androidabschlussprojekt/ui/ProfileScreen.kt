@@ -32,6 +32,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.ContentScale
 import de.syntax_institut.androidabschlussprojekt.R
+import de.syntax_institut.androidabschlussprojekt.ui.components.Background
+import androidx.compose.ui.graphics.Color
 import de.syntax_institut.androidabschlussprojekt.ui.Screen
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.ProfileViewModel
@@ -53,6 +55,7 @@ fun ProfileScreen(
     
     val dogs = viewModel.dogs
     val caredDogs = viewModel.caredDogs
+    Background {
     
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -138,7 +141,7 @@ fun ProfileScreen(
                 modifier = Modifier
                     .size(328.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .background(Color.White)
                     .padding(16.dp)
             )
         } else {
@@ -149,7 +152,7 @@ fun ProfileScreen(
                 modifier = Modifier
                     .size(328.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .background(Color.White)
                     .padding(16.dp)
             )
         }
@@ -188,5 +191,6 @@ fun ProfileScreen(
         ) {
             Text("Abmelden")
         }
+    }
     }
 }

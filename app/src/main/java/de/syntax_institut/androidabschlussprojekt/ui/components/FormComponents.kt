@@ -21,6 +21,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import de.syntax_institut.androidabschlussprojekt.R
 
 
 @Composable
@@ -54,12 +56,15 @@ fun ImagePicker(
 
     
 
-    val displayModel: Any? = selectedUri ?: model
+    val displayModel: Any? = selectedUri ?: model ?: R.drawable.baseline_image_24
     AsyncImage(
         model = displayModel,
         contentDescription = null,
-        modifier = modifier.clickable { launcher.launch("image/*") }
+        modifier = modifier.clickable { launcher.launch("image/*") },
+        contentScale = ContentScale.Crop
     )
+
+
 }
 
 @Composable

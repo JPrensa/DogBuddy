@@ -22,6 +22,10 @@ import androidx.compose.ui.res.painterResource
 import de.syntax_institut.androidabschlussprojekt.R
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
+import de.syntax_institut.androidabschlussprojekt.ui.Screen
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.DisposableEffect
 
 
 import androidx.navigation.NavController
@@ -160,8 +164,37 @@ fun DogDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 interestedUsers.forEach { uid ->
-                    Text(text = uid, style = MaterialTheme.typography.bodySmall)
-                }
+                    var interestedName by remember { mutableStateOf("") }
+                    var interestedImageUrl by remember { mutableStateOf<String?>(null) }
+                    DisposableEffect(uid) {
+                        val ownerReg = db.collection("users").document(uid)
+                            .addSnapshotListener { ownerSnap, _ ->
+                                if (ownerSnap != null && ownerSnap.exists()) {
+                                    interestedName = ownerSnap.getString("name") ?: ""
+                                    interestedImageUrl = ownerSnap.getString("imageUrl")
+                                }
+                            }
+                        onDispose { ownerReg.remove() }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate(Screen.OwnerDetail.createRoute(uid)) }
+                    ) {
+                        AsyncImage(
+                            model = interestedImageUrl ?: R.drawable.baseline_pets_24,
+                            placeholder = painterResource(R.drawable.baseline_pets_24),
+                            error = painterResource(R.drawable.baseline_pets_24),
+                            contentDescription = interestedName,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = interestedName, style = MaterialTheme.typography.bodyMedium)
+                    }
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -177,6 +210,7 @@ fun DogDetailScreen(
             ) {
                 Text(if (requested) "Bereits angefragt" else "Ich kann aufpassen")
             }
+        }
         }
     }
 }

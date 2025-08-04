@@ -1,6 +1,8 @@
 package de.syntax_institut.androidabschlussprojekt.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,6 +13,16 @@ import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.ProfileViewModel
 import de.syntax_institut.androidabschlussprojekt.ui.components.Counter
 import de.syntax_institut.androidabschlussprojekt.ui.components.DogAvatar
+import de.syntax_institut.androidabschlussprojekt.ui.Screen
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import androidx.compose.foundation.shape.CircleShape
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.res.painterResource
+import de.syntax_institut.androidabschlussprojekt.R
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import androidx.compose.runtime.getValue
@@ -56,9 +68,49 @@ fun CareDetailScreen(
         if (from.isNotBlank() && to.isNotBlank()) {
             Text(text = "Betreuungszeit: $from bis $to", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(8.dp))
+            // Verbleibende Tage anzeigen
+            val daysLeft = runCatching {
+                val formatter = DateTimeFormatter.ofPattern("d.M.yyyy")
+                val toDate = LocalDate.parse(to, formatter)
+                ChronoUnit.DAYS.between(LocalDate.now(), toDate).toInt()
+            }.getOrNull()
+            daysLeft?.let {
+                Text(
+                    text = if (it >= 0) "Noch $it Tage verbleibend" else "Betreuung beendet",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
         if (ownerId.isNotBlank()) {
-            Text(text = "Anfrage von: $ownerId", style = MaterialTheme.typography.bodyMedium)
+            var ownerName by remember { mutableStateOf("") }
+            var ownerImageUrl by remember { mutableStateOf<String?>(null) }
+            DisposableEffect(ownerId) {
+                val ownerReg = db.collection("users").document(ownerId)
+                    .addSnapshotListener { ownerSnap, _ ->
+                        if (ownerSnap != null && ownerSnap.exists()) {
+                            ownerName = ownerSnap.getString("name") ?: ""
+                            ownerImageUrl = ownerSnap.getString("imageUrl")
+                        }
+                    }
+                onDispose { ownerReg.remove() }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable { navController.navigate(Screen.OwnerDetail.createRoute(ownerId)) }
+            ) {
+                AsyncImage(
+                    model = ownerImageUrl ?: R.drawable.baseline_pets_24,
+                    contentDescription = "Besitzer",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = ownerName, style = MaterialTheme.typography.headlineSmall)
+            }
             Spacer(modifier = Modifier.height(16.dp))
         }
         Spacer(modifier = Modifier.height(16.dp))

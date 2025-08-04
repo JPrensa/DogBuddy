@@ -18,11 +18,14 @@ import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.clip
 import coil.compose.rememberAsyncImagePainter
+import de.syntax_institut.androidabschlussprojekt.ui.components.Background
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
     val breeds = viewModel.breeds
     var searchQuery by remember { mutableStateOf("") }
+    Background {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
@@ -32,6 +35,8 @@ fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
             label = { Text("Rasse suchen") },
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Hunderassen Infos", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(8.dp))
         if (breeds.isEmpty()) {
             Box(
@@ -47,31 +52,39 @@ fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
             }.take(3)
             if (selectedBreed == null) {
                 if (searchQuery.isBlank()) {
-                    val dailyBreed = remember(breeds) { breeds.random() }
-                    Card(
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    val defaultBreeds = remember(breeds) { breeds.take(3) }
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            AsyncImage(
-                                model = dailyBreed.image?.url ?: dailyBreed.referenceImageId?.let { "https://cdn2.thedogapi.com/images/$it.jpg" },
-                                contentDescription = dailyBreed.name,
-                                contentScale = ContentScale.Crop,
+                        items(defaultBreeds) { breed ->
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = dailyBreed.name, style = MaterialTheme.typography.headlineSmall)
-                            dailyBreed.lifeSpan?.let { Text(text = "Leben: $it", style = MaterialTheme.typography.bodyMedium) }
-                            dailyBreed.temperament?.let { Text(text = "Temperament: $it", style = MaterialTheme.typography.bodyMedium) }
-                            dailyBreed.origin?.let { Text(text = "Ursprung: $it", style = MaterialTheme.typography.bodyMedium) }
-                            dailyBreed.weight?.metric?.let { Text(text = "Gewicht: $it kg", style = MaterialTheme.typography.bodyMedium) }
+                                    .clickable { selectedBreed = breed },
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    AsyncImage(
+                                        model = breed.image?.url ?: breed.referenceImageId?.let { "https://cdn2.thedogapi.com/images/$it.jpg" },
+                                        contentDescription = breed.name,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                            .clip(RoundedCornerShape(16.dp))
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(text = breed.name, style = MaterialTheme.typography.headlineSmall)
+                                }
+                            }
                         }
                     }
                 } else {
@@ -93,7 +106,8 @@ fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable { selectedBreed = breed },
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                                 ) {
                                     Column(
                                         modifier = Modifier
@@ -123,7 +137,8 @@ fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
                 Card(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -167,5 +182,6 @@ fun BreedListScreen(viewModel: DogDetailsViewModel = viewModel()) {
                 }
             }
         }
+    }
     }
 }
