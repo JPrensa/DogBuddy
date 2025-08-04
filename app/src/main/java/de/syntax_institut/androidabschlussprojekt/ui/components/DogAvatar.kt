@@ -9,6 +9,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import android.util.Base64
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import de.syntax_institut.androidabschlussprojekt.R
@@ -21,15 +26,31 @@ fun DogAvatar(
     size: Dp = 80.dp,
     onClick: () -> Unit
 ) {
-    AsyncImage(
-        model = dog.imageUri?.toString() ?: R.drawable.baseline_pets_24,
-        placeholder = painterResource(R.drawable.baseline_pets_24),
-        error = painterResource(R.drawable.baseline_pets_24),
-        contentScale = ContentScale.Crop,
-        contentDescription = dog.name,
-        modifier = modifier
-            .size(size)
-            .clip(CircleShape)
-            .clickable(onClick = onClick)
-    )
+    val uriStr = dog.imageUri?.toString() ?: ""
+    if (uriStr.startsWith("data:image/")) {
+        val bitmap = remember {
+            val decodedBytes = Base64.decode(uriStr.substringAfter(","), Base64.DEFAULT)
+            BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+        }
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = dog.name,
+            modifier = modifier
+                .size(size)
+                .clip(CircleShape)
+                .clickable(onClick = onClick)
+        )
+    } else {
+        AsyncImage(
+            model = uriStr.takeIf { it.isNotBlank() } ?: R.drawable.baseline_pets_24,
+            placeholder = painterResource(R.drawable.baseline_pets_24),
+            error = painterResource(R.drawable.baseline_pets_24),
+            contentScale = ContentScale.Crop,
+            contentDescription = dog.name,
+            modifier = modifier
+                .size(size)
+                .clip(CircleShape)
+                .clickable(onClick = onClick)
+        )
+    }
 }

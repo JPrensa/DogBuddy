@@ -240,4 +240,9 @@ object FirestoreRepository {
             .set(mapOf("imageUrl" to downloadUrl), SetOptions.merge()).await()
         return downloadUrl
     }
+
+    /** Delete a dog document **/
+    suspend fun deleteDog(dogId: String) {
+        db.collection("dogs").document(dogId).delete().await()
+    }
 }

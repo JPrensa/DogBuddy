@@ -99,4 +99,15 @@ class ProfileViewModel : ViewModel() {
             }
         }
     }
+
+    /** Delete a dog belonging to the user **/
+    fun deleteDog(dogId: String) {
+        viewModelScope.launch {
+            try {
+                FirestoreRepository.deleteDog(dogId)
+            } catch (e: Exception) {
+                // TODO: Fehlerbehandlung
+            }
+        }
+    }
 }

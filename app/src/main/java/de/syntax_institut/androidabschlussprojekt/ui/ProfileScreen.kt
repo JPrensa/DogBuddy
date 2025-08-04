@@ -23,6 +23,9 @@ import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import de.syntax_institut.androidabschlussprojekt.ui.components.DogAvatar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import de.syntax_institut.androidabschlussprojekt.ui.components.ImagePicker
 
 
@@ -42,24 +45,32 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(text = "Deine Hunde", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "Deine Hunde Anzeige", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(8.dp))
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(dogs) { dog ->
-                AsyncImage(
-                    model = dog.imageUri?.toString() ?: R.drawable.baseline_pets_24,
-                    placeholder = painterResource(R.drawable.baseline_pets_24),
-                    error = painterResource(R.drawable.baseline_pets_24),
-                    contentScale = ContentScale.Crop,
-                    contentDescription = dog.name,
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(CircleShape)
-                        .clickable { navController.navigate(Screen.DogProfile.createRoute(dog.id)) }
-                )
+                Box(modifier = Modifier.size(80.dp)) {
+                    DogAvatar(
+                        dog = dog,
+                        modifier = Modifier.fillMaxSize(),
+                        onClick = { navController.navigate(Screen.DogProfile.createRoute(dog.id)) }
+                    )
+                    IconButton(
+                        onClick = { viewModel.deleteDog(dog.id) },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Löschen Hund",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -109,14 +120,7 @@ fun ProfileScreen(
         ) {
             Text("Profil bearbeiten")
         }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(
-            onClick = { navController.navigate(Screen.Upload.route) },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Hund hinzufügen")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
+        
         Button(
             onClick = {
                 FirebaseAuth.getInstance().signOut()

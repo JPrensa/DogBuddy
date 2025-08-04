@@ -10,4 +10,12 @@ object UserRepository {
     var phone by mutableStateOf("030-123456")
     var age by mutableStateOf("")
     var address by mutableStateOf("")
+
+    fun clear() {
+        name = ""
+        email = ""
+        phone = ""
+        age = ""
+        address = ""
+    }
 }

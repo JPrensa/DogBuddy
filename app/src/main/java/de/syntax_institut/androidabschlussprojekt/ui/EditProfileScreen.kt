@@ -8,6 +8,37 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import de.syntax_institut.androidabschlussprojekt.viewmodel.EditProfileViewModel
+import android.net.Uri
+import java.util.UUID
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import de.syntax_institut.androidabschlussprojekt.R
+import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+import de.syntax_institut.androidabschlussprojekt.model.Dog
+import de.syntax_institut.androidabschlussprojekt.model.UserProfile
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import de.syntax_institut.androidabschlussprojekt.ui.components.FormSection
+import de.syntax_institut.androidabschlussprojekt.ui.components.LabeledTextField
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import de.syntax_institut.androidabschlussprojekt.ui.components.DogFormItem
+
+private data class DogForm(
+    val id: String = UUID.randomUUID().toString(),
+    var name: String = "",
+    var age: String = "",
+    var imageUri: Uri? = null
+)
+
 
 @Composable
 fun EditProfileScreen(
@@ -19,44 +50,78 @@ fun EditProfileScreen(
     val phone = viewModel.phone
     val age = viewModel.age
     val address = viewModel.address
+        val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
+        var dogForms by remember { mutableStateOf(listOf<DogForm>()) }
+        var currentPickerIndex by remember { mutableStateOf<Int?>(null) }
+        val imagePickerLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            currentPickerIndex?.let { idx ->
+                uri?.let { newUri ->
+                    dogForms = dogForms.toMutableList().also { list -> list[idx] = list[idx].copy(imageUri = newUri) }
+                }
+            }
+        }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "Profil bearbeiten", style = MaterialTheme.typography.headlineMedium)
-        OutlinedTextField(
-            value = name,
-            onValueChange = viewModel::onNameChange,
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = email,
-            onValueChange = viewModel::onEmailChange,
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = phone,
-            onValueChange = viewModel::onPhoneChange,
-            label = { Text("Telefon") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = age,
-            onValueChange = viewModel::onAgeChange,
-            label = { Text("Alter") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = address,
-            onValueChange = viewModel::onAddressChange,
-            label = { Text("Adresse") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        FormSection("Profil bearbeiten")
+        LabeledTextField(label = "Name", value = name, onValueChange = viewModel::onNameChange)
+        LabeledTextField(label = "Email", value = email, onValueChange = viewModel::onEmailChange)
+        LabeledTextField(label = "Telefon", value = phone, onValueChange = viewModel::onPhoneChange)
+        LabeledTextField(label = "Alter", value = age, onValueChange = viewModel::onAgeChange)
+        LabeledTextField(label = "Adresse", value = address, onValueChange = viewModel::onAddressChange)
+        FormSection("Meine Hunde")
+        dogForms.forEachIndexed { idx, form ->
+            DogFormItem(
+                name = form.name,
+                age = form.age,
+                imageUri = form.imageUri,
+                onNameChange = { new -> dogForms = dogForms.toMutableList().also { it[idx] = it[idx].copy(name = new) } },
+                onAgeChange = { new -> dogForms = dogForms.toMutableList().also { it[idx] = it[idx].copy(age = new) } },
+                onPickImage = { currentPickerIndex = idx; imagePickerLauncher.launch("image/*") },
+                onRemove = { dogForms = dogForms.toMutableList().also { it.removeAt(idx) } },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
         Button(
-            onClick = { viewModel.save { navController.popBackStack() } },
+            onClick = { dogForms = dogForms + DogForm() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Hund hinzufügen")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    val profile = UserProfile(name = name, email = email, phone = phone, age = age, address = address)
+                    FirestoreRepository.updateUserProfile(profile)
+                    UserRepository.name = name
+                    UserRepository.email = email
+                    UserRepository.phone = phone
+                    UserRepository.age = age
+                    UserRepository.address = address
+                    dogForms.forEach { form ->
+                        FirestoreRepository.addDogBase64(
+                            Dog(
+                                id = form.id,
+                                name = form.name,
+                                age = form.age,
+                                breed = "",
+                                imageUri = form.imageUri,
+                                description = null,
+                                unavailableFrom = null,
+                                unavailableTo = null
+                            ),
+                            context
+                        )
+                    }
+                    withContext(Dispatchers.Main) {
+                        navController.popBackStack()
+                    }
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Speichern")
