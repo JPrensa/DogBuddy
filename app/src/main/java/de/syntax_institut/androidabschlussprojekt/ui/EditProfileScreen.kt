@@ -83,16 +83,43 @@ fun EditProfileScreen(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        AsyncImage(
-            model = displayProfile,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(128.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .clickable { profileImageLauncher.launch("image/*") }
-        )
+        if (selectedProfileUri != null) {
+            AsyncImage(
+                model = selectedProfileUri,
+                placeholder = painterResource(R.drawable.baseline_image_24),
+                error = painterResource(R.drawable.baseline_image_24),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(128.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { profileImageLauncher.launch("image/*") }
+            )
+        } else if (currentProfile.imageUrl != null) {
+            AsyncImage(
+                model = currentProfile.imageUrl,
+                placeholder = painterResource(R.drawable.baseline_image_24),
+                error = painterResource(R.drawable.baseline_image_24),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(128.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { profileImageLauncher.launch("image/*") }
+            )
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.baseline_image_24),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(128.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { profileImageLauncher.launch("image/*") }
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         FormSection("Profil bearbeiten")
         LabeledTextField(label = "Name", value = name, onValueChange = viewModel::onNameChange)

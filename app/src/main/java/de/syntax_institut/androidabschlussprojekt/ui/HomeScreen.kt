@@ -37,6 +37,7 @@ import de.syntax_institut.androidabschlussprojekt.R
 import androidx.compose.ui.graphics.Color
 import de.syntax_institut.androidabschlussprojekt.ui.components.Background
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
+import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
 
 @Composable
 fun HomeScreen(
@@ -52,10 +53,19 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
-        items(dogs) { dog ->
+        item {
             Text(text = "Offener Anzeige", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            Card(colors = CardDefaults.cardColors(containerColor = Color.White), 
+        }
+
+        items(dogs) { dog ->
+
+            Spacer(modifier = Modifier.height(8.dp))
+            val interestedUsers by FirestoreRepository.getInterestedUsersFlow(dog.id).collectAsState(initial = emptyList())
+
+            Card(colors = CardDefaults.cardColors(containerColor = if (interestedUsers.isNotEmpty()) Color(
+                0xFFFCDAC2
+            ) else Color.White),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { navController.navigate(Screen.DogProfile.createRoute(dog.id)) },
