@@ -18,10 +18,11 @@ import coil.compose.AsyncImage
 import androidx.compose.ui.res.painterResource
 import de.syntax_institut.androidabschlussprojekt.R
 import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
-import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+
 import android.widget.Toast
 import android.util.Log
 import android.util.Base64
+import de.syntax_institut.androidabschlussprojekt.data.UserRepository
 import de.syntax_institut.androidabschlussprojekt.model.Dog
 import de.syntax_institut.androidabschlussprojekt.model.UserProfile
 import androidx.compose.runtime.collectAsState
@@ -150,34 +151,25 @@ fun EditProfileScreen(
         Button(
             onClick = {
                 coroutineScope.launch {
-                    var newImageUrl: String? = currentProfile.imageUrl
-                    if (selectedProfileUri != null) {
-                            try {
-                                val inputStream = context.contentResolver.openInputStream(selectedProfileUri!!)
-                                inputStream?.use { stream ->
-                                    val bytes = stream.readBytes()
-                                    val base64 = Base64.encodeToString(bytes, Base64.DEFAULT)
-                                    newImageUrl = "data:image/jpeg;base64,$base64"
-                                }
-                            } catch (e: Exception) {
-                                Log.e("EditProfileScreen", "Profilbild-Konvertierung fehlgeschlagen", e)
-                            }
-                        }
-                        val profile = UserProfile(
-                            name = name,
-                            email = email,
-                            phone = phone,
-                            age = age,
-                            address = address,
-                            imageUrl = newImageUrl
-                        )
+                                        val newImageUrl = selectedProfileUri
+                        ?.let { UserRepository.uploadProfileImage(context, it) }
+                        ?: currentProfile.imageUrl
+
+                    val profile = UserProfile(
+                        name = name,
+                        email = email,
+                        phone = phone,
+                        age = age,
+                        address = address,
+                        imageUrl = newImageUrl
+                    )
                     try {
-                        FirestoreRepository.updateUserProfile(profile)
-                        UserRepository.name = name
-                        UserRepository.email = email
-                        UserRepository.phone = phone
-                        UserRepository.age = age
-                        UserRepository.address = address
+                        UserRepository.updateUserProfile(profile)
+                        
+                        
+                        
+                        
+                        
                         dogForms.forEach { form ->
                             FirestoreRepository.addDogBase64(
                                 Dog(

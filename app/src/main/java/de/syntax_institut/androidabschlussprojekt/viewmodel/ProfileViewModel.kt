@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
-import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+
 import de.syntax_institut.androidabschlussprojekt.model.Dog
 import android.net.Uri
 import de.syntax_institut.androidabschlussprojekt.model.UserProfile
@@ -19,15 +19,15 @@ class ProfileViewModel : ViewModel() {
     val dogs = mutableStateListOf<Dog>()
     val caredDogs = mutableStateListOf<Dog>()
 
-    var name by mutableStateOf(UserRepository.name)
+    var name by mutableStateOf("")
         private set
-    var email by mutableStateOf(UserRepository.email)
+    var email by mutableStateOf("")
         private set
-    var phone by mutableStateOf(UserRepository.phone)
+    var phone by mutableStateOf("")
         private set
-    var age by mutableStateOf(UserRepository.age)
+    var age by mutableStateOf("")
         private set
-    var address by mutableStateOf(UserRepository.address)
+    var address by mutableStateOf("")
         private set
     var profileImageUrl by mutableStateOf<String?>(null)
         private set
@@ -83,11 +83,7 @@ class ProfileViewModel : ViewModel() {
     }
 
     fun refresh() {
-        name = UserRepository.name
-        email = UserRepository.email
-        phone = UserRepository.phone
-        age = UserRepository.age
-        address = UserRepository.address
+        // no-op
     }
 
     /** Aktualisiert die gefütterten Mahlzeiten und benachrichtigt den Besitzer **/

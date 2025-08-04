@@ -4,23 +4,35 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import de.syntax_institut.androidabschlussprojekt.data.UserRepository
+
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import de.syntax_institut.androidabschlussprojekt.data.UserRepository
 import de.syntax_institut.androidabschlussprojekt.model.UserProfile
 
 class EditProfileViewModel : ViewModel() {
-    var name by mutableStateOf(UserRepository.name)
+    var name by mutableStateOf("")
         private set
-    var email by mutableStateOf(UserRepository.email)
+    var email by mutableStateOf("")
         private set
-    var phone by mutableStateOf(UserRepository.phone)
+    var phone by mutableStateOf("")
         private set
-    var age by mutableStateOf(UserRepository.age)
+    var age by mutableStateOf("")
         private set
-    var address by mutableStateOf(UserRepository.address)
+    var address by mutableStateOf("")
         private set
+
+    init {
+        viewModelScope.launch {
+            UserRepository.getUserProfileFlow().collect { profile ->
+                name = profile.name
+                email = profile.email
+                phone = profile.phone
+                age = profile.age
+                address = profile.address
+            }
+        }
+    }
 
     fun onNameChange(new: String) { name = new }
     fun onEmailChange(new: String) { email = new }
@@ -31,7 +43,7 @@ class EditProfileViewModel : ViewModel() {
     fun save(onDone: () -> Unit) {
         viewModelScope.launch {
             // Firestore aktualisieren
-            FirestoreRepository.updateUserProfile(
+            UserRepository.updateUserProfile(
                 UserProfile(
                     name = name,
                     email = email,
@@ -41,11 +53,11 @@ class EditProfileViewModel : ViewModel() {
                 )
             )
             // Lokale Repository-Werte setzen
-            UserRepository.name = name
-            UserRepository.email = email
-            UserRepository.phone = phone
-            UserRepository.age = age
-            UserRepository.address = address
+            
+            
+            
+            
+            
             onDone()
         }
     }
