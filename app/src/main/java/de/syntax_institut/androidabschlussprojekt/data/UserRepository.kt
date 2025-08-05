@@ -7,8 +7,6 @@ import android.util.Log
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
-
-
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.channels.awaitClose
@@ -20,9 +18,8 @@ object UserRepository {
     private val db = Firebase.firestore
 
 
-    /**
-     * Liefert ein Flow mit dem UserProfile aus Firestore
-     */
+    //Liefert ein Flow mit dem UserProfile aus Firestore
+
     fun getUserProfileFlow(): Flow<UserProfile> = callbackFlow {
         val uid = auth.currentUser?.uid ?: return@callbackFlow
         val listener = db.collection("users").document(uid)
@@ -41,9 +38,9 @@ object UserRepository {
         awaitClose { listener.remove() }
     }
 
-    /**
-     * Aktualisiert das UserProfile in Firestore
-     */
+
+     //Aktualisiert das UserProfile in Firestore
+
     suspend fun updateUserProfile(profile: UserProfile) {
         val uid = auth.currentUser?.uid ?: return
         val data = mapOf(
@@ -57,9 +54,9 @@ object UserRepository {
         db.collection("users").document(uid).set(data).await()
     }
 
-    /**
-     * Lädt Profilbild als Base64 in Firestore und liefert Data-URI
-     */
+
+     //Lädt Profilbild als Base64 in Firestore und liefert Data-URI
+
     suspend fun uploadProfileImage(context: Context, imageUri: Uri): String? {
         val uid = auth.currentUser?.uid ?: return null
         return try {

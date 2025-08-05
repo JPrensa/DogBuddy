@@ -195,6 +195,7 @@ fun DogDetailScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(text = interestedName, style = MaterialTheme.typography.bodyMedium)
                     }
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -210,7 +211,6 @@ fun DogDetailScreen(
             ) {
                 Text(if (requested) "Bereits angefragt" else "Ich kann aufpassen")
             }
-        }
         }
     }
 }
