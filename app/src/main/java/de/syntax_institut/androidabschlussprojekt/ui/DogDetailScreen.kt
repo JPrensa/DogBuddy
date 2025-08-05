@@ -29,9 +29,11 @@ import androidx.compose.runtime.DisposableEffect
 
 
 import androidx.navigation.NavController
+
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
 import de.syntax_institut.androidabschlussprojekt.viewmodel.DogDetailViewModel
-import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
+
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import androidx.compose.runtime.collectAsState
@@ -44,29 +46,25 @@ fun DogDetailScreen(
 ) {
     val detailViewModel: DogDetailViewModel = viewModel()
     val requested by detailViewModel.requested.collectAsState(initial = false)
+    
+    
     val homeViewModel: HomeViewModel = viewModel()
     val dogs by homeViewModel.dogs.collectAsState(initial = emptyList())
     val dog = dogs.find { it.id == dogId } ?: return
     val context = LocalContext.current
-    val userDogs by FirestoreRepository.getUserDogsFlow().collectAsState(initial = emptyList())
-    val isOwner = userDogs.any { it.id == dogId }
     val db = Firebase.firestore
-    var mealsGiven by remember { mutableStateOf(dog.mealsGiven) }
-    var walksDone by remember { mutableStateOf(dog.walksDone) }
-    var totalWalks by remember { mutableStateOf(dog.totalWalks) }
-    var interestedUsers by remember { mutableStateOf<List<String>>(emptyList()) }
-    DisposableEffect(dogId) {
-        val registration = db.collection("dogs").document(dogId)
-            .addSnapshotListener { snapshot, error ->
-                if (snapshot != null && snapshot.exists()) {
-                    mealsGiven = (snapshot.getLong("mealsGiven") ?: 0).toInt()
-                    walksDone = (snapshot.getLong("walksDone") ?: 0).toInt()
-                    totalWalks = (snapshot.getLong("totalWalks") ?: 0).toInt()
-                    interestedUsers = snapshot.get("interestedUsers") as? List<String> ?: emptyList()
-                }
-            }
-        onDispose { registration.remove() }
-    }
+    val userDogs by DogRepository.getUserDogs().collectAsState(initial = emptyList())
+    val isOwner = userDogs.any { it.id == dogId }
+    val mealsGiven = dog.mealsGiven
+    val walksDone = dog.walksDone
+    val totalWalks = dog.totalWalks
+    val interestedUsers by DogRepository.getInterestedUsers(dogId).collectAsState(initial = emptyList())
+    
+    
+    
+    
+    
+    
     LaunchedEffect(requested) {
         if (requested) {
             Toast.makeText(context, "Interesse bestätigt", Toast.LENGTH_SHORT).show()

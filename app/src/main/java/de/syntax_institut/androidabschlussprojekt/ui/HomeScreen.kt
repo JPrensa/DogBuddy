@@ -37,7 +37,7 @@ import de.syntax_institut.androidabschlussprojekt.R
 import androidx.compose.ui.graphics.Color
 import de.syntax_institut.androidabschlussprojekt.ui.components.Background
 import de.syntax_institut.androidabschlussprojekt.viewmodel.HomeViewModel
-import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 
 @Composable
 fun HomeScreen(
@@ -61,7 +61,7 @@ fun HomeScreen(
         items(dogs) { dog ->
 
             Spacer(modifier = Modifier.height(8.dp))
-            val interestedUsers by FirestoreRepository.getInterestedUsersFlow(dog.id).collectAsState(initial = emptyList())
+            val interestedUsers by DogRepository.getInterestedUsers(dog.id).collectAsState(initial = emptyList())
 
             Card(colors = CardDefaults.cardColors(containerColor = if (interestedUsers.isNotEmpty()) Color(
                 0xFFFCDAC2

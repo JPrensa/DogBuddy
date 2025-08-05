@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
 
 import de.syntax_institut.androidabschlussprojekt.model.Dog
@@ -35,7 +36,7 @@ class ProfileViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            FirestoreRepository.getUserDogsFlow().collect { list ->
+            DogRepository.getUserDogs().collect { list ->
                 dogs.clear()
                 dogs.addAll(list)
             }
@@ -51,7 +52,7 @@ class ProfileViewModel : ViewModel() {
             }
         }
         viewModelScope.launch {
-            FirestoreRepository.getCaredDogsFlow().collect { list ->
+            DogRepository.getCaredDogs().collect { list ->
                 caredDogs.clear()
                 caredDogs.addAll(list)
             }
@@ -90,7 +91,7 @@ class ProfileViewModel : ViewModel() {
     fun updateMeals(dogId: String, meals: Int) {
         viewModelScope.launch {
             try {
-                FirestoreRepository.updateMeals(dogId, meals)
+                DogRepository.updateMeals(dogId, meals)
             } catch (e: Exception) {
                 // TODO: Fehlerbehandlung
             }
@@ -101,7 +102,7 @@ class ProfileViewModel : ViewModel() {
     fun updateWalks(dogId: String, walks: Int) {
         viewModelScope.launch {
             try {
-                FirestoreRepository.updateWalks(dogId, walks)
+                DogRepository.updateWalks(dogId, walks)
             } catch (e: Exception) {
                 // TODO: Fehlerbehandlung
             }
@@ -126,7 +127,7 @@ class ProfileViewModel : ViewModel() {
     fun deleteDog(dogId: String) {
         viewModelScope.launch {
             try {
-                FirestoreRepository.deleteDog(dogId)
+                DogRepository.deleteDog(dogId)
             } catch (e: Exception) {
                 // TODO: Fehlerbehandlung
             }

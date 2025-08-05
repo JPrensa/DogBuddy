@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.syntax_institut.androidabschlussprojekt.viewmodel.UploadViewModel
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 import de.syntax_institut.androidabschlussprojekt.ui.Screen
 import de.syntax_institut.androidabschlussprojekt.ui.components.FormTextField
 import de.syntax_institut.androidabschlussprojekt.ui.components.ImagePicker
@@ -116,7 +117,7 @@ fun UploadScreen(
                         unavailableTo = viewModel.unavailableTo
                     )
                     try {
-                        de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository.addDogBase64(dog, context)
+                        DogRepository.addDog(dog, context)
                         android.widget.Toast.makeText(context, "Hund gespeichert", android.widget.Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
                         android.widget.Toast.makeText(context, "Fehler: " + (e.localizedMessage ?: "Unbekannter Fehler"), android.widget.Toast.LENGTH_LONG).show()

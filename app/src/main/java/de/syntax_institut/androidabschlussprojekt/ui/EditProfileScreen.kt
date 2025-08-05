@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.AsyncImage
 import androidx.compose.ui.res.painterResource
 import de.syntax_institut.androidabschlussprojekt.R
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
 
 import android.widget.Toast
@@ -171,7 +172,7 @@ fun EditProfileScreen(
                         
                         
                         dogForms.forEach { form ->
-                            FirestoreRepository.addDogBase64(
+                            DogRepository.addDog(
                                 Dog(
                                     id = form.id,
                                     name = form.name,

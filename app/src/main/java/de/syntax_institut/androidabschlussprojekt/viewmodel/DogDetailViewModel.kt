@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import kotlinx.coroutines.flow.Flow
+import de.syntax_institut.androidabschlussprojekt.model.Dog
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 
 class DogDetailViewModel : ViewModel() {
     private val _requested = MutableStateFlow(false)
@@ -15,7 +17,7 @@ class DogDetailViewModel : ViewModel() {
     fun requestCare(dogId: String) {
         viewModelScope.launch {
             try {
-                val success = FirestoreRepository.requestCare(dogId)
+                val success = DogRepository.requestCare(dogId)
                 if (success) {
                     _requested.value = true
                 }
@@ -24,4 +26,8 @@ class DogDetailViewModel : ViewModel() {
             }
         }
     }
+
+    fun getUserDogs(): Flow<List<Dog>> = DogRepository.getUserDogs()
+
+    fun getInterestedUsers(dogId: String): Flow<List<String>> = DogRepository.getInterestedUsers(dogId)
 }

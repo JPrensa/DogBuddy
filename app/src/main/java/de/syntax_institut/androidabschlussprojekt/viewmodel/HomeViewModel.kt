@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import de.syntax_institut.androidabschlussprojekt.model.Dog
-import de.syntax_institut.androidabschlussprojekt.data.FirestoreRepository
+import de.syntax_institut.androidabschlussprojekt.data.DogRepository
 
 class HomeViewModel : ViewModel() {
     
@@ -18,7 +18,7 @@ class HomeViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            FirestoreRepository.getAllDogsFlow().collect { list ->
+            DogRepository.getAllDogs().collect { list ->
                 _dogs.value = list
             }
         }
